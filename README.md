@@ -7,7 +7,7 @@ However, I wanted to streamline the process more for my development pipelines, s
 
 ## How to install
 
-1. Download the add-on file [`fbxpress-unity.py`](https://github.com/KrazenLabs/FBXpress-Unity/blob/master/fbxpress-unity.py) to your device.
+1. Download the add-on file from the release page: [`fbxpress-unity.py`](https://github.com/KrazenLabs/FBXpress-Unity/releases).
 2. In Blender go to Edit > Preferences > Add-ons, then use the Install… button and use the File Browser to select the add-on file.
 3. Enable the add-on by checking the enable checkbox.
 
