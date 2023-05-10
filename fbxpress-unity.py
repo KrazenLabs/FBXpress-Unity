@@ -1,6 +1,6 @@
 bl_info = {
     "name": "FBXpress-Unity",
-    "author": "Krazen Labs (krazenlabs.com",
+    "author": "Krazen Labs (krazenlabs.com)",
     "version": (2, 0, 0),
     "blender": (3, 5, 1),
     "location": "File > Export > Unity FBX",
