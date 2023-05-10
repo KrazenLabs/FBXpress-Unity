@@ -1,8 +1,8 @@
 bl_info = {
-	"name": "Unity FBX format",
-	"author": "Angel 'Edy' Garcia (@VehiclePhysics)",
-	"version": (1, 3, 1),
-	"blender": (2, 80, 0),
+	"name": "Unity FBX Quick Export",
+	"author": "Krazen Labs (krazenlabs.com",
+	"version": (1, 3, 5),
+	"blender": (3, 50, 0),
 	"location": "File > Export > Unity FBX",
 	"description": "FBX exporter compatible with Unity's coordinate and scaling system.",
 	"warning": "",
@@ -10,10 +10,12 @@ bl_info = {
 	"category": "Import-Export",
 }
 
+# Original Unity FBX Exporter written by Angel 'Edy' Garcia (@VehiclePhysics)
 
 import bpy
 import mathutils
 import math
+import os
 
 
 # Multi-user datablocks are preserved here. Unique copies are made for applying the rotation.
@@ -29,6 +31,89 @@ hidden_objects = []
 disabled_collections = []
 disabled_objects = []
 
+# Define scene properties
+bpy.types.Scene.export_path = bpy.props.StringProperty(
+	name="Export Path",
+	description="Path to export FBX files to",
+	default="",
+	maxlen=1024,
+	subtype='DIR_PATH'
+)
+
+bpy.types.Scene.export_file_name = bpy.props.StringProperty(
+	name="Export File Name",
+	description="Name of the exported file",
+	default="my_export.fbx",
+	maxlen=1024,
+	subtype='FILE_NAME'
+)
+
+bpy.types.Scene.selected_objects = bpy.props.BoolProperty(
+	name="Selected Objects Only",
+	description="Export selected objects only. May be combined with Active Collection Only.",
+	default=True,
+)
+
+bpy.types.Scene.active_collection = bpy.props.BoolProperty(
+	name="Active Collection Only",
+	description="Export objects in the active collection only (and its children). May be combined with Selected Objects Only.",
+	default=True,
+)
+
+bpy.types.Scene.deform_bones = bpy.props.BoolProperty(
+	name="Only Deform Bones",
+	description="Only write deforming bones (and non-deforming ones when they have deforming children)",
+	default=False,
+)
+
+bpy.types.Scene.leaf_bones = bpy.props.BoolProperty(
+	name="Add Leaf Bones",
+	description="Append a final bone to the end of each chain to specify last bone length (use this when you intend to edit the armature from exported data)",
+	default=False,
+)
+
+bpy.types.Scene.primary_bone_axis = bpy.props.EnumProperty(
+		name="Primary Bone Axis",
+		items=(('X', "X Axis", ""),
+				('Y', "Y Axis", ""),
+				('Z', "Z Axis", ""),
+				('-X', "-X Axis", ""),
+				('-Y', "-Y Axis", ""),
+				('-Z', "-Z Axis", ""),
+				),
+		default='Y',
+		)
+bpy.types.Scene.secondary_bone_axis = bpy.props.EnumProperty(
+		name="Secondary Bone Axis",
+		items=(('X', "X Axis", ""),
+				('Y', "Y Axis", ""),
+				('Z', "Z Axis", ""),
+				('-X', "-X Axis", ""),
+				('-Y', "-Y Axis", ""),
+				('-Z', "-Z Axis", ""),
+				),
+		default='X',
+		)
+
+# Panel class
+class EXPORT_PT_my_panel(bpy.types.Panel):
+	bl_label = "Unity Export Settings"
+	bl_idname = "EXPORT_PT_my_panel"
+	bl_space_type = 'PROPERTIES'
+	bl_region_type = 'WINDOW'
+	bl_context = "scene"
+
+	def draw(self, context):
+		layout = self.layout
+		scene = context.scene
+
+		layout.prop(scene, "export_path")
+		layout.prop(scene, "active_collection")
+		layout.prop(scene, "selected_objects")
+		layout.prop(scene, "deform_bones")
+		layout.prop(scene, "leaf_bones")
+		layout.prop(scene, "primary_bone_axis")
+		layout.prop(scene, "secondary_bone_axis")
 
 def unhide_collections(col):
 	global hidden_collections
@@ -174,7 +259,10 @@ def export_unity_fbx(context, filepath, active_collection, selected_objects, def
 	selection = bpy.context.selected_objects
 
 	# Object mode
-	bpy.ops.object.mode_set(mode="OBJECT")
+	try:
+    		bpy.ops.object.mode_set(mode="OBJECT")
+	except:
+    		pass
 
 	# Ensure all the collections and objects in this view layer are visible
 	unhide_collections(bpy.context.view_layer.layer_collection)
@@ -342,8 +430,21 @@ class ExportUnityFbx(Operator, ExportHelper):
 
 
 	def execute(self, context):
-		return export_unity_fbx(context, self.filepath, self.active_collection, self.selected_objects, self.deform_bones, self.leaf_bones, self.primary_bone_axis, self.secondary_bone_axis)
+		# Get the export path and file name from the current scene.
+		export_path = context.scene.export_path
+		export_file_name = context.scene.export_file_name
+		# Combine the export path with the file name to get the full path.
+		full_path = os.path.join(export_path, export_file_name)
+		return export_unity_fbx(context, full_path, self.active_collection, context.scene.selected_objects, context.scene.deform_bones, context.scene.leaf_bones, self.primary_bone_axis, self.secondary_bone_axis)
 
+	def invoke(self, context, event):
+		# Get the export path and file name from the current scene.
+		export_path = context.scene.export_path
+		export_file_name = context.scene.export_file_name
+		# Combine the export path with the file name to get the full path.
+		full_path = os.path.join(export_path, export_file_name)
+		self.filepath = full_path
+		return self.execute(context)
 
 # Only needed if you want to add into a dynamic menu
 def menu_func_export(self, context):
@@ -351,11 +452,13 @@ def menu_func_export(self, context):
 
 
 def register():
+	bpy.utils.register_class(EXPORT_PT_my_panel)
 	bpy.utils.register_class(ExportUnityFbx)
 	bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 
 def unregister():
+	bpy.utils.unregister_class(EXPORT_PT_my_panel)
 	bpy.utils.unregister_class(ExportUnityFbx)
 	bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
 
