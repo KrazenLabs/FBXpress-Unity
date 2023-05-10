@@ -96,9 +96,9 @@ bpy.types.Scene.secondary_bone_axis = bpy.props.EnumProperty(
 
 
 # Panel class
-class EXPORT_PT_my_panel(bpy.types.Panel):
+class EXPORT_PT_unity_fbx_panel(bpy.types.Panel):
     bl_label = "Unity Export Settings"
-    bl_idname = "EXPORT_PT_my_panel"
+    bl_idname = "EXPORT_PT_unity_fbx_panel"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "scene"
@@ -108,7 +108,7 @@ class EXPORT_PT_my_panel(bpy.types.Panel):
         scene = context.scene
 
         layout.prop(scene, "export_path")
-		layout.prop(scene, "export_file_name")
+        layout.prop(scene, "export_file_name")
         layout.prop(scene, "active_collection")
         layout.prop(scene, "selected_objects")
         layout.prop(scene, "deform_bones")
@@ -309,7 +309,6 @@ def export_unity_fbx(context, filepath, active_collection, selected_objects, def
             ob.select_set(True)
 
         # Export FBX file
-
         params = dict(filepath=filepath, apply_scale_options='FBX_SCALE_UNITS',
                       object_types={'EMPTY', 'MESH', 'ARMATURE'},
                       use_active_collection=active_collection, use_selection=selected_objects,
@@ -363,13 +362,13 @@ def menu_func_export(self, context):
 
 
 def register():
-    bpy.utils.register_class(EXPORT_PT_my_panel)
+    bpy.utils.register_class(EXPORT_PT_unity_fbx_panel)
     bpy.utils.register_class(ExportUnityFbx)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 
 def unregister():
-    bpy.utils.unregister_class(EXPORT_PT_my_panel)
+    bpy.utils.unregister_class(EXPORT_PT_unity_fbx_panel)
     bpy.utils.unregister_class(ExportUnityFbx)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
 
