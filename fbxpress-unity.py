@@ -2,7 +2,7 @@ bl_info = {
 	"name": "FBXpress-Unity",
 	"author": "Krazen Labs (krazenlabs.com",
 	"version": (1, 3, 5),
-	"blender": (3, 50, 0),
+	"blender": (3, 5, 1),
 	"location": "File > Export > Unity FBX",
 	"description": "FBX exporter compatible with Unity's coordinate and scaling system.",
 	"warning": "",
